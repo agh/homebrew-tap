@@ -29,7 +29,7 @@ pass `--greedy`.
 
 | Cask | Description |
 |------|-------------|
-| `insta360-wave-controller` | Insta360's controller for its Wave microphones; runs Insta360's installer and updates itself ([insta360.com](https://www.insta360.com/product/insta360-wave)) |
+| `insta360-wave-controller` | Insta360's desktop app for its Wave speakerphones; runs Insta360's installer and updates itself ([insta360.com](https://www.insta360.com/download/insta360-wave)) |
 | `lg-switch` | LG's monitor controls and screen layouts. LG's installer also adds fonts, helpers in `/usr/local/switch`, a launch agent and a login item, which the cask's uninstall removes ([lg.com](https://www.lg.com/us/support/monitors)) |
 
 Work Louder's Input configurator, formerly `input` here, is in Homebrew as
