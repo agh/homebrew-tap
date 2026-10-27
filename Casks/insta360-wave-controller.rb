@@ -4,8 +4,9 @@ cask "insta360-wave-controller" do
 
   url "https://wassets.insta360.com/common/#{version.csv.last}/Insta360WaveController_#{version.csv.first}(#{version.csv.second})#{version.csv.third}.pkg"
   name "Insta360 Wave Controller"
-  desc "Controller for Insta360 Wave microphones"
-  homepage "https://www.insta360.com/product/insta360-wave"
+  desc "Desktop app for managing Insta360 Wave speakerphones"
+  homepage "https://www.insta360.com/download/insta360-wave",
+           browsed: "2026-10-27"
 
   livecheck do
     url "https://openapi.insta360.com/app/appDownload/getGroupApp?group=insta360-wave&X-Language=en-us"
