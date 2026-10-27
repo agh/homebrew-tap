@@ -14,11 +14,13 @@ cask "insta360-wave-controller" do
       app = json.dig("data", "apps")&.find { |item| item["app_id"] == 144 }
       next unless app
 
-      newest_release = app["items"]&.select { |item| item["platform"] == "mac" }
-                                   &.max_by { |item| Version.new(item["version"]) }
-      next unless newest_release
+      official = app["items"]&.filter_map do |item|
+        next if item["platform"] != "mac"
 
-      channel = newest_release["channels"]&.find { |item| item["channel"] == "official" }
+        channel = item["channels"]&.find { |c| c["channel"] == "official" }
+        [item, channel] if channel
+      end
+      _, channel = official&.max_by { |item, _| Version.new(item["version"]) }
       next unless channel
 
       match = channel["download_url"]&.match(regex)

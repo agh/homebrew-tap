@@ -1,0 +1,40 @@
+name: Upstream check
+
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash -xeuo pipefail {0}
+
+jobs:
+  livecheck:
+    name: Report outdated packages
+    runs-on: macos-26
+    permissions:
+      contents: read
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # 2026.10.19.1
+
+      # Fails, and so notifies, when anything is outdated or livecheck breaks.
+      # Bump locally with `brew bump --tap=agh/tap --open-pr`: a pull request
+      # opened here with GITHUB_TOKEN would not trigger the tests.
+      - name: Livecheck
+        run: |
+          brew livecheck --tap=agh/tap --full-name --json --quiet > "${RUNNER_TEMP}/livecheck.json"
+          report="$(jq -r '.[]
+            | select(.status == "error" or .version.outdated)
+            | if .status == "error"
+              then "- `\(.formula // .cask)`: livecheck failed: \(.messages | join("; "))"
+              else "- `\(.formula // .cask)`: \(.version.current) → \(.version.latest)"
+              end' "${RUNNER_TEMP}/livecheck.json")"
+          if [[ -n "${report}" ]]; then
+            printf '## Upstream changes\n\n%s\n' "${report}" >> "${GITHUB_STEP_SUMMARY}"
+            echo "${report}"
+            exit 1
+          fi

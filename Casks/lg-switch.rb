@@ -4,7 +4,7 @@ cask "lg-switch" do
 
   url "https://gscs-b2c.lge.com/downloadFile?fileId=#{version.csv.second}"
   name "LG Switch"
-  desc "Monitor controls, screen layouts, and work and life modes for LG displays"
+  desc "Monitor controls and screen layouts for LG displays"
   homepage "https://www.lg.com/us/support/monitors"
 
   livecheck do
@@ -57,7 +57,10 @@ cask "lg-switch" do
               "/usr/local/switch",
             ]
 
-  zap trash: "~/Library/LG Switch"
+  zap trash: [
+    "~/Library/Application Support/LG Switch",
+    "~/Library/LG Switch",
+  ]
 
   caveats do
     reboot

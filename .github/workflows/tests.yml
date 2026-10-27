@@ -1,0 +1,116 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -xeuo pipefail {0}
+
+jobs:
+  syntax:
+    name: Style, audit and livecheck
+    runs-on: macos-26
+    permissions:
+      contents: read
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # 2026.10.19.1
+        with:
+          # The cask token audit only sees homebrew/core formula names from a checkout.
+          core: true
+
+      - run: brew style agh/tap
+
+      - run: brew readall --aliases --os=all --arch=all agh/tap
+
+      - run: brew audit --strict --online --tap=agh/tap
+
+      - name: Livecheck finds every package
+        run: |
+          brew livecheck --tap=agh/tap --full-name --json --quiet > "${RUNNER_TEMP}/livecheck.json"
+          errors="$(jq -r '.[] | select(.status == "error") | "\(.formula // .cask): \(.messages | join("; "))"' "${RUNNER_TEMP}/livecheck.json")"
+          if [[ -n "${errors}" ]]; then
+            echo "${errors}"
+            exit 1
+          fi
+
+  formulae:
+    name: Formulae install and test
+    runs-on: macos-26
+    permissions:
+      contents: read
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # 2026.10.19.1
+
+      - name: Install, test and uninstall each formula
+        run: |
+          for formula in $(brew tap-info --json agh/tap | jq -r '.[0].formula_names[]'); do
+            brew install --build-from-source "${formula}"
+            brew test --verbose "${formula}"
+            brew uninstall "${formula}"
+          done
+
+  list-casks:
+    name: List casks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      casks: ${{ steps.list.outputs.casks }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - id: list
+        run: |
+          casks="$(find Casks -name '*.rb' -exec basename {} .rb \; | sort | jq -Rnc '[inputs]')"
+          echo "casks=${casks}" >> "${GITHUB_OUTPUT}"
+
+  cask:
+    name: Cask round-trip (${{ matrix.cask }})
+    needs: list-casks
+    runs-on: macos-26
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        cask: ${{ fromJSON(needs.list-casks.outputs.casks) }}
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # 2026.10.19.1
+
+      - run: .github/scripts/cask-lifecycle.sh "agh/tap/${CASK}"
+        env:
+          CASK: ${{ matrix.cask }}
+
+  tests-pass:
+    name: Tests pass
+    if: always()
+    needs:
+      - syntax
+      - formulae
+      - cask
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Require every job to succeed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          for result in ${RESULTS}; do
+            [[ "${result}" == "success" ]]
+          done
