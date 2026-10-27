@@ -1,8 +1,8 @@
 class Cwtch < Formula
   desc "Manage Claude Code profiles and sync configuration from Git"
   homepage "https://github.com/agh/cwtch"
-  url "https://github.com/agh/cwtch/archive/refs/tags/v6.0.0.tar.gz"
-  sha256 "35070bccbe73baa0ee35a3bf5dc19bb7c21711420e2215cb3cfce187859a115f"
+  url "https://github.com/agh/cwtch/archive/refs/tags/v6.1.0.tar.gz"
+  sha256 "630774598df926b25f6dcc5aa1f66f2ff0372c6f8d1f509308db5beff1dde1bb"
   license "MIT"
 
   livecheck do
