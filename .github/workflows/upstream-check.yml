@@ -22,7 +22,8 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # 2026.10.19.1
 
       # Fails, and so notifies, when anything is outdated or livecheck breaks.
-      # Bump locally with `brew bump --tap=agh/tap --open-pr` so commits stay signed.
+      # Bump locally with `brew bump --tap=agh/tap --open-pr`: a pull request
+      # opened here with GITHUB_TOKEN would not trigger the tests.
       - name: Livecheck
         run: |
           brew livecheck --tap=agh/tap --full-name --json --quiet > "${RUNNER_TEMP}/livecheck.json"
