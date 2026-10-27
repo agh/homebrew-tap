@@ -1,19 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
   ],
-  "automerge": true,
-  "automergeType": "pr",
-  "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/Formula/.+\\.rb$/"
-      ],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+url \"[^\"]*?(?<currentValue>v[\\d.]+)[^\"]*\""
-      ]
-    }
-  ]
+  "enabledManagers": [
+    "github-actions",
+    "homebrew"
+  ],
+  "automerge": false
 }
