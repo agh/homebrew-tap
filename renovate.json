@@ -8,5 +8,6 @@
     "github-actions",
     "homebrew"
   ],
-  "automerge": false
+  "automerge": true,
+  "automergeType": "pr"
 }
